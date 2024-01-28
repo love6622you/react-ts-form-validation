@@ -1,10 +1,10 @@
 import "./App.css";
-import { Button } from "./components/ui/button";
+import AgeGroupPriceList from "./components/ageGroupPrice/AgeGroupPriceList";
 
 function App() {
   return (
     <div className="h-[100dvh] grid place-items-center">
-      <Button>Click me</Button>
+      <AgeGroupPriceList />
     </div>
   );
 }
