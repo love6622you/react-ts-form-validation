@@ -1,10 +1,10 @@
+// Shadcn Components
 import {
   FormControl,
   FormField,
   FormItem,
   FormMessage
 } from "@/components/ui/form";
-
 import {
   Select,
   SelectContent,
@@ -12,15 +12,23 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+
 import { cn } from "@/lib/utils";
 
 type AgeGroupSelectProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any;
   name: string;
+  startLimit?: string;
+  endLimit?: string;
 };
 
-const AgeGroupSelect = ({ form, name }: AgeGroupSelectProps) => {
+const AgeGroupSelect = ({
+  form,
+  name,
+  startLimit,
+  endLimit
+}: AgeGroupSelectProps) => {
   return (
     <FormField
       control={form.control}
@@ -36,7 +44,13 @@ const AgeGroupSelect = ({ form, name }: AgeGroupSelectProps) => {
 
             <SelectContent>
               {Array.from({ length: 21 }).map((_, index) => (
-                <SelectItem key={index} value={String(index)}>
+                <SelectItem
+                  key={index}
+                  value={String(index)}
+                  disabled={
+                    index > Number(endLimit) || index < Number(startLimit)
+                  }
+                >
                   {String(index)}
                 </SelectItem>
               ))}

@@ -1,13 +1,17 @@
 // Shadcn Components
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
+import { Separator } from "@/components/ui/separator";
+
 import AgeGroupSelect from "./AgeGroupSelect";
 import PriceInput from "./PriceInput";
 
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
+import { getNumberIntervals } from "@/utils/number";
 
 const FormSchema = z.object({
   group: z.array(
@@ -41,47 +45,93 @@ export const AgeGroupPriceList = () => {
     name: "group"
   });
 
+  const ageGroupList = form.getValues("group").map((item) => {
+    return [+item.startAge, +item.endAge];
+  });
+
+  // useEffect(() => {
+  //   if (ageGroupList.length > 1) {
+  //     const intervals = getNumberIntervals(ageGroupList);
+  //     if (intervals.overlap.length > 0) {
+  //       console.log("trigger");
+  //       form.setError("group", {
+  //         type: "manual",
+  //         message: "年齡區間不可重疊"
+  //       });
+  //     }
+  //   }
+  // }, [ageGroupList]);
+
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     console.log(data);
+
+    // if (ageGroupList.length > 1) {
+    //   const intervals = getNumberIntervals(ageGroupList);
+    //   if (intervals.overlap.length > 0) {
+    //     console.log("trigger");
+    //     form.setError("group.0.startAge", {
+    //       type: "manual",
+    //       message: "年齡區間不可重疊"
+    //     });
+    //   }
+    // }
   };
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="max-w-screen-lg w-4/5 space-y-6"
+        className="max-w-screen-lg w-4/5"
       >
         <ul className="space-y-8">
-          {fields.map((item, index) => {
-            return (
-              <li key={index} className="flex gap-5">
-                {index !== 0 && (
-                  <button className='first:hidden' onClick={() => remove(index)}>Delete {index + 1}</button>
-                )}
+          {fields.map((_item, index) => {
+            const isFirst = index === 0;
+            const isLast = index === fields.length - 1;
 
-                <div className="flex-1">
-                  <p className="text-gray-400 text-sm pb-1.5">年齡</p>
-                  <div className="flex">
-                    <AgeGroupSelect
-                      form={form}
-                      name={`group.${index}.startAge`}
-                    />
-                    <div className="w-10 text-center self-center bg-gray-200 leading-10">
-                      ～
+            return (
+              // TODO: 這裡的 key 要把 index 換掉
+              <li key={index} className="space-y-5">
+                <div className="flex justify-between">
+                  <h4>價格設定 - {index + 1}</h4>
+                  {!isFirst && (
+                    <button
+                      className="text-orange-400"
+                      onClick={() => remove(index)}
+                    >
+                      ✕ 移除
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex gap-5">
+                  <div className="flex-1">
+                    <p className="text-gray-400 text-sm pb-1.5">年齡</p>
+                    <div className="flex">
+                      <AgeGroupSelect
+                        form={form}
+                        name={`group.${index}.startAge`}
+                        endLimit={form.watch(`group.${index}.endAge`)}
+                      />
+                      <div className="w-10 text-center self-center bg-gray-200 leading-10">
+                        ～
+                      </div>
+                      <AgeGroupSelect
+                        form={form}
+                        name={`group.${index}.endAge`}
+                        startLimit={form.watch(`group.${index}.startAge`)}
+                      />
                     </div>
-                    <AgeGroupSelect
-                      form={form}
-                      name={`group.${index}.endAge`}
-                    />
+                  </div>
+
+                  <div className="flex-1">
+                    <p className="text-gray-400 text-sm pb-1.5">
+                      入住費用(每人每晚)
+                    </p>
+                    <PriceInput form={form} name={`group.${index}.price`} />
                   </div>
                 </div>
 
-                <div className="flex-1">
-                  <p className="text-gray-400 text-sm pb-1.5">
-                    入住費用(每人每晚)
-                  </p>
-                  <PriceInput form={form} name={`group.${index}.price`} />
-                </div>
+                {!isLast && <Separator />}
               </li>
             );
           })}
