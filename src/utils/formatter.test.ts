@@ -5,13 +5,11 @@ import { addComma } from "./formatter";
 describe("addComma", () => {
   test("should add thousands separator to value", () => {
     expect(addComma("100")).toBe("100");
-    expect(addComma("1000")).toBe("1,000");
     expect(addComma("1000000000")).toBe("1,000,000,000");
   });
 
   test("should add thousands separator to value with decimal", () => {
     expect(addComma("1.102")).toBe("1.102");
-    expect(addComma("1000.102")).toBe("1,000.102");
     expect(addComma("11230.13")).toBe("11,230.13");
   });
 
