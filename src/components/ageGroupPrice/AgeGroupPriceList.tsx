@@ -6,7 +6,6 @@ import { Separator } from "@/components/ui/separator";
 import AgeGroupSelect from "./AgeGroupSelect";
 import PriceInput from "./PriceInput";
 
-import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
@@ -16,8 +15,7 @@ import { getNumberIntervals } from "@/utils/number";
 const FormSchema = z.object({
   group: z.array(
     z.object({
-      startAge: z.string(),
-      endAge: z.string(),
+      ageGroup: z.array(z.string()),
       price: z.string().min(1, {
         message: "不可以為空白"
       })
@@ -32,8 +30,7 @@ export const AgeGroupPriceList = () => {
     defaultValues: {
       group: [
         {
-          startAge: "0",
-          endAge: "20",
+          ageGroup: ["0", "20"],
           price: "0"
         }
       ]
@@ -46,57 +43,53 @@ export const AgeGroupPriceList = () => {
   });
 
   const ageGroupList = form.getValues("group").map((item) => {
-    return [+item.startAge, +item.endAge];
+    return item.ageGroup.map((age) => Number(age));
   });
 
-  // useEffect(() => {
-  //   if (ageGroupList.length > 1) {
-  //     const intervals = getNumberIntervals(ageGroupList);
-  //     if (intervals.overlap.length > 0) {
-  //       console.log("trigger");
-  //       form.setError("group", {
-  //         type: "manual",
-  //         message: "年齡區間不可重疊"
-  //       });
-  //     }
-  //   }
-  // }, [ageGroupList]);
+  const checkedOverlap = () => {
+    console.log("trigger?");
+    const intervals = getNumberIntervals(ageGroupList);
+    if (intervals.overlap.length > 0) {
+      ageGroupList.forEach((_item, index) => {
+        form.setError(`group.${index}.ageGroup.0`, {
+          type: "onChange",
+          message: "年齡區間不可重疊"
+        });
+      });
+    } else {
+      form.trigger();
+    }
+  };
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     console.log(data);
-
-    // if (ageGroupList.length > 1) {
-    //   const intervals = getNumberIntervals(ageGroupList);
-    //   if (intervals.overlap.length > 0) {
-    //     console.log("trigger");
-    //     form.setError("group.0.startAge", {
-    //       type: "manual",
-    //       message: "年齡區間不可重疊"
-    //     });
-    //   }
-    // }
   };
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
         className="max-w-screen-lg w-4/5"
+        onChange={() => {
+          checkedOverlap();
+        }}
+        onSubmit={form.handleSubmit(onSubmit)}
       >
-        <ul className="space-y-8">
+        <ul className="space-y-5 py-10">
           {fields.map((_item, index) => {
             const isFirst = index === 0;
             const isLast = index === fields.length - 1;
 
             return (
-              // TODO: 這裡的 key 要把 index 換掉
-              <li key={index} className="space-y-5">
+              <li key={`group_${index}`} className="space-y-5">
                 <div className="flex justify-between">
                   <h4>價格設定 - {index + 1}</h4>
                   {!isFirst && (
                     <button
                       className="text-orange-400"
-                      onClick={() => remove(index)}
+                      onClick={() => {
+                        remove(index);
+                        form.trigger();
+                      }}
                     >
                       ✕ 移除
                     </button>
@@ -106,19 +99,19 @@ export const AgeGroupPriceList = () => {
                 <div className="flex gap-5">
                   <div className="flex-1">
                     <p className="text-gray-400 text-sm pb-1.5">年齡</p>
-                    <div className="flex">
+                    <div className="grid grid-cols-[1fr_40px_1fr]">
                       <AgeGroupSelect
                         form={form}
-                        name={`group.${index}.startAge`}
-                        endLimit={form.watch(`group.${index}.endAge`)}
+                        name={`group.${index}.ageGroup.0`}
+                        endLimit={form.watch(`group.${index}.ageGroup.1`)}
                       />
-                      <div className="w-10 text-center self-center bg-gray-200 leading-10">
+                      <div className="w-10 text-center h-min bg-gray-200 leading-10">
                         ～
                       </div>
                       <AgeGroupSelect
                         form={form}
-                        name={`group.${index}.endAge`}
-                        startLimit={form.watch(`group.${index}.startAge`)}
+                        name={`group.${index}.ageGroup.1`}
+                        startLimit={form.watch(`group.${index}.ageGroup.0`)}
                       />
                     </div>
                   </div>
@@ -142,7 +135,8 @@ export const AgeGroupPriceList = () => {
           className={cn("text-teal-400 hover:no-underline")}
           variant="link"
           onClick={() => {
-            append({ startAge: "0", endAge: "20", price: "0" });
+            append({ ageGroup: ["0", "20"], price: "0" });
+            form.trigger();
           }}
           type="button"
         >

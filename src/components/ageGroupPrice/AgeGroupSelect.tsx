@@ -34,9 +34,9 @@ const AgeGroupSelect = ({
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem className={cn("flex-1")}>
+        <FormItem>
           <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <FormControl className={cn("")}>
+            <FormControl>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -56,7 +56,9 @@ const AgeGroupSelect = ({
               ))}
             </SelectContent>
           </Select>
-          <FormMessage />
+          <FormMessage
+            className={cn("bg-orange-100 py-1.5 px-2.5 rounded-sm")}
+          />
         </FormItem>
       )}
     />
