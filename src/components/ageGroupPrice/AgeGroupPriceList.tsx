@@ -1,17 +1,18 @@
-// Shadcn Components
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
+import { useEffect } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@/lib/utils";
+import { getNumberIntervals } from "@/utils/number";
 
 import AgeGroupSelect from "./AgeGroupSelect";
 import PriceInput from "./PriceInput";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFieldArray } from "react-hook-form";
-import { z } from "zod";
-import { cn } from "@/lib/utils";
-import { getNumberIntervals } from "@/utils/number";
-import { useEffect } from "react";
+// Shadcn Components
+import { Button } from "@/components/ui/button";
+import { Form } from "@/components/ui/form";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/ui/use-toast";
 
 const DEFAULT_GROUP_VALUE = {
   ageGroup: ["0", "20"],
@@ -69,6 +70,14 @@ export const AgeGroupPriceList = () => {
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     console.log(data);
+    toast({
+      title: "You submitted the following values:",
+      description: (
+        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+          <code className="text-white">{JSON.stringify(data.group, null, 2)}</code>
+        </pre>
+      )
+    });
   };
 
   return (
@@ -99,7 +108,7 @@ export const AgeGroupPriceList = () => {
                 <div className="flex gap-5">
                   <div className="flex-1">
                     <p className="text-gray-400 text-sm pb-1.5">年齡</p>
-                    <div className="grid grid-cols-[1fr_40px_1fr]">
+                    <div className="relative grid grid-cols-[1fr_40px_1fr]">
                       <AgeGroupSelect
                         form={form}
                         name={{
@@ -126,15 +135,19 @@ export const AgeGroupPriceList = () => {
           })}
         </ul>
 
-        <Button type="submit">Submit</Button>
-        <Button
-          className={cn("text-teal-400 hover:no-underline")}
-          variant="link"
-          onClick={() => append(DEFAULT_GROUP_VALUE)}
-          type="button"
-        >
-          ✚ 新增價格設定
-        </Button>
+        <div className="flex justify-between">
+          <Button
+            className={cn("text-teal-400 hover:no-underline")}
+            variant="link"
+            onClick={() => append(DEFAULT_GROUP_VALUE)}
+            type="button"
+          >
+            ✚ 新增價格設定
+          </Button>
+          <Button type="submit" className="ml-auto">
+            Submit
+          </Button>
+        </div>
       </form>
     </Form>
   );

@@ -1,3 +1,6 @@
+import { ControllerRenderProps, FieldValues } from "react-hook-form";
+import { cn } from "@/lib/utils";
+
 // Shadcn Components
 import {
   FormControl,
@@ -12,9 +15,6 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-
-import { ControllerRenderProps, FieldValues } from "react-hook-form";
-import { cn } from "@/lib/utils";
 
 type AgeGroupSelectProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,25 +74,22 @@ const AgeGroupSelect = ({
           <FormItem>
             {renderAgeSelect(field)}
             <FormMessage
-              className={cn("bg-orange-100 py-1.5 px-2.5 rounded-sm")}
+              className={cn(
+                "absolute w-full bg-orange-100 py-1.5 px-2.5 rounded-sm"
+              )}
             />
           </FormItem>
         )}
       />
 
-      <div className="w-10 text-center h-min bg-gray-200 leading-10">～</div>
+      <div className="w-10 text-center h-min bg-gray-200 leading-10 text-sm">
+        ～
+      </div>
 
       <FormField
         control={form.control}
         name={name.endAge}
-        render={({ field }) => (
-          <FormItem>
-            {renderAgeSelect(field)}
-            <FormMessage
-              className={cn("bg-orange-100 py-1.5 px-2.5 rounded-sm")}
-            />
-          </FormItem>
-        )}
+        render={({ field }) => <FormItem>{renderAgeSelect(field)}</FormItem>}
       />
     </>
   );

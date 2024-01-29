@@ -1,3 +1,7 @@
+import { cn } from "@/lib/utils";
+import { addComma } from "@/utils/formatter";
+
+// Shadcn Components
 import {
   FormControl,
   FormField,
@@ -6,9 +10,6 @@ import {
   FormDescription
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
-import { cn } from "@/lib/utils";
-import { addComma } from "@/utils/formatter";
 
 type PriceInputProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,20 +25,25 @@ const PriceInput = ({ form, name }: PriceInputProps) => {
       render={({ field }) => (
         <FormItem>
           <FormControl>
-            <Input
-              {...field}
-              placeholder="請輸入費用"
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                let value = event.target.value;
+            <div className="flex bg-gray-200 rounded-md">
+              <span className="self-center px-2 text-sm">TWD</span>
+              <Input
+                {...field}
+                className="bg-white"
+                placeholder="請輸入費用"
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  let value = event.target.value;
 
-                // 過濾非數字的字元
-                value = value.replace(/[^\d.]/g, "");
-                value = addComma(value);
+                  // 過濾非數字的字元
+                  value = value.replace(/[^\d.]/g, "");
+                  value = addComma(value);
 
-                field.onChange(value);
-              }}
-            />
+                  field.onChange(value);
+                }}
+              />
+            </div>
           </FormControl>
+
           <FormMessage
             className={cn("bg-orange-100 py-1.5 px-2.5 rounded-sm")}
           />
