@@ -13,14 +13,15 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
+import { ControllerRenderProps, FieldValues } from "react-hook-form";
 import { cn } from "@/lib/utils";
 
 type AgeGroupSelectProps = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any;
-  name: string;
-  startLimit?: string;
-  endLimit?: string;
+  name: { startAge: string; endAge: string };
+  startLimit: string;
+  endLimit: string;
 };
 
 const AgeGroupSelect = ({
@@ -29,39 +30,71 @@ const AgeGroupSelect = ({
   startLimit,
   endLimit
 }: AgeGroupSelectProps) => {
-  return (
-    <FormField
-      control={form.control}
-      name={name}
-      render={({ field }) => (
-        <FormItem>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
-            <FormControl>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-            </FormControl>
+  const checkedDisabled = (value: string, index: number) => {
+    const { startAge, endAge } = name;
+    if (startAge === value && index > Number(endLimit)) {
+      return true;
+    }
+    if (endAge === value && index < Number(startLimit)) {
+      return true;
+    }
+    return false;
+  };
 
-            <SelectContent>
-              {Array.from({ length: 21 }).map((_, index) => (
-                <SelectItem
-                  key={index}
-                  value={String(index)}
-                  disabled={
-                    index > Number(endLimit) || index < Number(startLimit)
-                  }
-                >
-                  {String(index)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FormMessage
-            className={cn("bg-orange-100 py-1.5 px-2.5 rounded-sm")}
-          />
-        </FormItem>
-      )}
-    />
+  const renderAgeSelect = (
+    field: ControllerRenderProps<FieldValues, string>
+  ) => (
+    <Select onValueChange={field.onChange} defaultValue={field.value}>
+      <FormControl>
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+      </FormControl>
+
+      <SelectContent>
+        {Array.from({ length: 21 }).map((_, index) => (
+          <SelectItem
+            key={index}
+            value={String(index)}
+            disabled={checkedDisabled(field.name, index)}
+          >
+            {String(index)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+
+  return (
+    <>
+      <FormField
+        control={form.control}
+        name={name.startAge}
+        render={({ field }) => (
+          <FormItem>
+            {renderAgeSelect(field)}
+            <FormMessage
+              className={cn("bg-orange-100 py-1.5 px-2.5 rounded-sm")}
+            />
+          </FormItem>
+        )}
+      />
+
+      <div className="w-10 text-center h-min bg-gray-200 leading-10">～</div>
+
+      <FormField
+        control={form.control}
+        name={name.endAge}
+        render={({ field }) => (
+          <FormItem>
+            {renderAgeSelect(field)}
+            <FormMessage
+              className={cn("bg-orange-100 py-1.5 px-2.5 rounded-sm")}
+            />
+          </FormItem>
+        )}
+      />
+    </>
   );
 };
 

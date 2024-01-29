@@ -11,6 +11,12 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { getNumberIntervals } from "@/utils/number";
+import { useEffect } from "react";
+
+const DEFAULT_GROUP_VALUE = {
+  ageGroup: ["0", "20"],
+  price: "0"
+};
 
 const FormSchema = z.object({
   group: z.array(
@@ -28,12 +34,7 @@ export const AgeGroupPriceList = () => {
     mode: "onChange",
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      group: [
-        {
-          ageGroup: ["0", "20"],
-          price: "0"
-        }
-      ]
+      group: [DEFAULT_GROUP_VALUE]
     }
   });
 
@@ -46,20 +47,25 @@ export const AgeGroupPriceList = () => {
     return item.ageGroup.map((age) => Number(age));
   });
 
-  const checkedOverlap = () => {
-    console.log("trigger?");
+  // Watch AgeGroup 為基準，檢查是否有重疊的區間
+  useEffect(() => {
     const intervals = getNumberIntervals(ageGroupList);
-    if (intervals.overlap.length > 0) {
-      ageGroupList.forEach((_item, index) => {
+    ageGroupList.forEach((_item, index) => {
+      const hasError = form.getFieldState(`group.${index}.ageGroup.0`).error;
+      // 有重疊的區間，且沒有錯誤訊息，則 setError
+      if (intervals.overlap.length > 0 && !hasError) {
         form.setError(`group.${index}.ageGroup.0`, {
           type: "onChange",
           message: "年齡區間不可重疊"
         });
-      });
-    } else {
-      form.trigger();
-    }
-  };
+      }
+
+      // 沒有重疊的區間，且有錯誤訊息，則 clearErrors
+      if (intervals.overlap.length === 0 && hasError) {
+        form.clearErrors(`group.${index}.ageGroup.0`);
+      }
+    });
+  }, [ageGroupList]);
 
   const onSubmit = (data: z.infer<typeof FormSchema>) => {
     console.log(data);
@@ -69,27 +75,21 @@ export const AgeGroupPriceList = () => {
     <Form {...form}>
       <form
         className="max-w-screen-lg w-4/5"
-        onChange={() => {
-          checkedOverlap();
-        }}
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <ul className="space-y-5 py-10">
-          {fields.map((_item, index) => {
+          {fields.map((item, index) => {
             const isFirst = index === 0;
             const isLast = index === fields.length - 1;
 
             return (
-              <li key={`group_${index}`} className="space-y-5">
+              <li key={item.id} className="space-y-5">
                 <div className="flex justify-between">
                   <h4>價格設定 - {index + 1}</h4>
                   {!isFirst && (
                     <button
                       className="text-orange-400"
-                      onClick={() => {
-                        remove(index);
-                        form.trigger();
-                      }}
+                      onClick={() => remove(index)}
                     >
                       ✕ 移除
                     </button>
@@ -102,16 +102,12 @@ export const AgeGroupPriceList = () => {
                     <div className="grid grid-cols-[1fr_40px_1fr]">
                       <AgeGroupSelect
                         form={form}
-                        name={`group.${index}.ageGroup.0`}
-                        endLimit={form.watch(`group.${index}.ageGroup.1`)}
-                      />
-                      <div className="w-10 text-center h-min bg-gray-200 leading-10">
-                        ～
-                      </div>
-                      <AgeGroupSelect
-                        form={form}
-                        name={`group.${index}.ageGroup.1`}
+                        name={{
+                          startAge: `group.${index}.ageGroup.0`,
+                          endAge: `group.${index}.ageGroup.1`
+                        }}
                         startLimit={form.watch(`group.${index}.ageGroup.0`)}
+                        endLimit={form.watch(`group.${index}.ageGroup.1`)}
                       />
                     </div>
                   </div>
@@ -134,10 +130,7 @@ export const AgeGroupPriceList = () => {
         <Button
           className={cn("text-teal-400 hover:no-underline")}
           variant="link"
-          onClick={() => {
-            append({ ageGroup: ["0", "20"], price: "0" });
-            form.trigger();
-          }}
+          onClick={() => append(DEFAULT_GROUP_VALUE)}
           type="button"
         >
           ✚ 新增價格設定
